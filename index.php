@@ -84,7 +84,6 @@
       margin-top: 10px;
     }
 
-    /* Petal Style */
     .petal {
       position: absolute;
       width: 15px;
@@ -172,7 +171,7 @@
 
     if ($login_valido) {
         session_start();
-        $_SESSION['idUsuario'] = $usuario['id'];
+        $_SESSION['id_usuario'] = $usuario['id'];
         $_SESSION['login'] = $usuario['login'];
         $_SESSION['admin'] = $usuario['admin'];
         header("Location: perfil.php");

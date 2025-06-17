@@ -1,3 +1,6 @@
+
+
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -16,6 +19,8 @@
       margin: 0;
       position: relative;
       overflow: hidden;
+      overflow-y: auto;
+      
     }
 
     h1 {
@@ -140,30 +145,107 @@
         mysqli_close($conn);
   ?>
 
+  <?php
+    require './banco/conexao.php';
+
+    $exibirFormulario = false;
+    $jaAvaliou = false;
+
+    if (isset($_SESSION['id_usuario'])) {
+        $id_usuario = $_SESSION['id_usuario'];
+
+        $sqlCheck = "SELECT * FROM avaliacao WHERE id_jogo = ? AND id_usuario = ?";
+        $stmtCheck = mysqli_prepare($conn, $sqlCheck);
+        mysqli_stmt_bind_param($stmtCheck, "ii", $id, $id_usuario);
+        mysqli_stmt_execute($stmtCheck);
+        $resCheck = mysqli_stmt_get_result($stmtCheck);
+        
+
+        if (mysqli_num_rows($resCheck) === 0) {
+            $exibirFormulario = true;
+        } else {
+            $jaAvaliou = true;
+        }
+
+        mysqli_stmt_close($stmtCheck);
+    }
+    ?>
+
+
   <h1>🌸 Avaliar Jogo 🌸</h1>
 
-  <div class="container">
-    <p><strong>Nome:</strong> <?= htmlspecialchars($jogo['nome']) ?></p>
-    <p><strong>Plataforma:</strong> <?= htmlspecialchars($jogo['plataforma']) ?></p>
-    <p><strong>Gênero:</strong> <?= htmlspecialchars($jogo['genero']) ?></p>
+  
 
-    <form action="salvar_avaliacao.php" method="post">
-      <input type="hidden" name="id_jogo" value="<?= $jogo['id'] ?>">
+    <div class="container">
+        <p><strong>Nome:</strong> <?= htmlspecialchars($jogo['nome']) ?></p>
+        <p><strong>Plataforma:</strong> <?= htmlspecialchars($jogo['plataforma']) ?></p>
+        <p><strong>Gênero:</strong> <?= htmlspecialchars($jogo['genero']) ?></p>
 
-      <label for="estrelas">Nota:</label>
-      <div class="stars">
-        <?php for ($i = 5; $i >= 1; $i--): ?>
-          <input type="radio" name="estrelas" id="estrela<?= $i ?>" value="<?= $i ?>" required>
-          <label for="estrela<?= $i ?>">★</label>
-        <?php endfor; ?>
-      </div>
+        <?php if ($exibirFormulario): ?>
+        <form action="salvar_avaliacao.php" method="post">
+            <input type="hidden" name="id_jogo" value="<?= $jogo['id'] ?>">
 
-      <label for="comentario">Comentário:</label>
-      <textarea name="comentario" id="comentario" rows="4" required></textarea>
+            <label for="estrelas">Nota:</label>
+            <div class="stars">
+            <?php for ($i = 5; $i >= 1; $i--): ?>
+                <input type="radio" name="estrelas" id="estrela<?= $i ?>" value="<?= $i ?>" required>
+                <label for="estrela<?= $i ?>">★</label>
+            <?php endfor; ?>
+            </div>
 
-      <button type="submit">Enviar Avaliação</button>
-    </form>
-  </div>
+            <label for="comentario">Comentário:</label>
+            <textarea name="comentario" id="comentario" rows="4" required></textarea>
+
+            <button type="submit">Enviar Avaliação</button>
+        </form>
+        <?php elseif ($jaAvaliou): ?>
+        <p style="color:#c71585; font-weight:bold; margin-top:20px;">🌸 Você já avaliou este jogo. Obrigado pela sua opinião! 💬</p>
+        <?php endif; ?>
+
+       
+
+        
+    </div>
+
+    <?php
+            require './banco/conexao.php';
+
+            $sqlAvaliacoes = "SELECT a.nota, a.comentario, u.nome AS usuario_nome
+                                FROM avaliacao a
+                                JOIN usuarios u ON a.id_usuario = u.id
+                                WHERE a.id_jogo = ?
+                                ORDER BY a.id DESC";
+
+            $stmtAvaliacao = mysqli_prepare($conn, $sqlAvaliacoes);
+            mysqli_stmt_bind_param($stmtAvaliacao, "i", $id);
+            mysqli_stmt_execute($stmtAvaliacao);
+            $resultAvaliacoes = mysqli_stmt_get_result($stmtAvaliacao);
+
+            echo "<div class='container' style='margin-top: 30px;'>";
+            echo "<h2 style='text-align:center; color:#c71585;'>Avaliações dos usuários 💬</h2>";
+
+            if (mysqli_num_rows($resultAvaliacoes) > 0) {
+                while ($av = mysqli_fetch_assoc($resultAvaliacoes)) {
+                    echo "<div style='border-top:1px dashed #ffc0cb; padding-top:15px; margin-top:15px;'>";
+                    echo "<p><strong>" . htmlspecialchars($av['usuario_nome']) . "</strong> avaliou com ";
+                    
+                    // Estrelas renderizadas
+                    for ($i = 1; $i <= 5; $i++) {
+                        echo $i <= $av['nota'] ? "⭐" : "☆";
+                    }
+
+                    echo "</p>";
+                    echo "<p style='color:#c71585;'>\"" . nl2br(htmlspecialchars($av['comentario'])) . "\"</p>";
+                    echo "</div>";
+                }
+            } else {
+                echo "<p style='color:#999;'>Nenhuma avaliação ainda. Seja o primeiro a avaliar! 😊</p>";
+            }
+
+            echo "</div>";
+            mysqli_stmt_close($stmtAvaliacao);
+            mysqli_close($conn);
+            ?>
 
    
 

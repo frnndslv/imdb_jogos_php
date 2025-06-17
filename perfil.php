@@ -81,6 +81,20 @@
       animation: fall linear infinite;
     }
 
+    .logout-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background-color: #ff69b4;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: bold;
+        box-shadow: 0 4px 8px rgba(255, 105, 180, 0.4);
+        transition: background-color 0.3s ease;
+    }
+
     @keyframes fall {
       0% {
         transform: translateY(-10vh) rotate(0deg);
@@ -95,8 +109,9 @@
 </head>
 <body>
 
-    <h1>🌸 Meus Jogos avaliados 🌸</h1>
-    <a href="jogos.php">valiar novos jogos</a>
+    <h1>🌸 Jogos 🌸</h1>
+
+    <a href="logout.php" class="logout-btn">Sair</a>
 
     <?php
         session_start();
@@ -110,7 +125,7 @@
             echo "<tr>";
             echo "<th>ID</th><th>Nome</th><th>Plataforma</th><th>Gênero</th>";
 
-            if (isset($_SESSION['admin']) && $_SESSION['admin'] === true) {
+            if (isset($_SESSION['admin']) && $_SESSION['admin'] === 1) {
                 echo "<th>Ações</th>";
             }
 
@@ -119,7 +134,7 @@
             while ($linha = mysqli_fetch_assoc($resultado)) {
                 echo "<tr>";
                 echo "<td>" . $linha['id'] . "</td>";
-                if (isset($_SESSION['admin']) && $_SESSION['admin'] === true) {
+                if (isset($_SESSION['admin']) && $_SESSION['admin'] === 1) {
                     echo "<td><a href='jogos.php?id=" . $linha['id'] . "' style='color: #ff1493; text-decoration: none; font-weight: bold;'>" . $linha['nome'] . "</a></td>";
                 } else {
                     echo "<td><a href='avaliar_jogo.php?id=" . $linha['id'] . "' style='color: #c71585; text-decoration: none; font-weight: bold;'>" . $linha['nome'] . "</a></td>";
@@ -127,7 +142,7 @@
                 echo "<td>" . $linha['plataforma'] . "</td>";
                 echo "<td>" . $linha['genero'] . "</td>";
 
-                if (isset($_SESSION['admin']) && $_SESSION['admin'] === true) {
+                if (isset($_SESSION['admin']) && $_SESSION['admin'] === 1) {
                     echo "<td>
                             <form action='deletar.php' method='POST' onsubmit=\"return confirm('Tem certeza que deseja deletar este jogo?');\">
                                 <input type='hidden' name='id' value='" . $linha['id'] . "'>
@@ -149,7 +164,7 @@
         mysqli_close($conn);
 
         
-        if (isset($_SESSION['admin']) && $_SESSION['admin'] === true) {
+        if (isset($_SESSION['admin']) && $_SESSION['admin'] === 1) {
             echo "<a href='jogos.php'>➕ Criar novo jogo</a>";
         }
     ?>
