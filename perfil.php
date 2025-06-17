@@ -95,42 +95,64 @@
 </head>
 <body>
 
-  <h1>🌸 Meus Jogos avaliados 🌸</h1>
-  <a href="jogos.php">valiar novos jogos</a>
+    <h1>🌸 Meus Jogos avaliados 🌸</h1>
+    <a href="jogos.php">valiar novos jogos</a>
 
-  <?php
-    require './banco/conexao.php';
-    $sql = "SELECT id, nome, plataforma, genero FROM jogos";
-    $resultado = mysqli_query($conn, $sql);
+    <?php
+        session_start();
+        require './banco/conexao.php';
 
-    if (mysqli_num_rows($resultado) > 0) {
-        echo "<table>";
-        echo "<tr><th>ID</th><th>Nome</th><th>Plataforma</th><th>Gênero</th><th>Ações</th></tr>";
+        $sql = "SELECT id, nome, plataforma, genero FROM jogos";
+        $resultado = mysqli_query($conn, $sql);
 
-        while ($linha = mysqli_fetch_assoc($resultado)) {
+        if (mysqli_num_rows($resultado) > 0) {
+            echo "<table>";
             echo "<tr>";
-            echo "<td>" . $linha['id'] . "</td>";
-            echo "<td>" . $linha['nome'] . "</td>";
-            echo "<td>" . $linha['plataforma'] . "</td>";
-            echo "<td>" . $linha['genero'] . "</td>";
-            echo "<td>
-                    <form action='deletar.php' method='POST' onsubmit=\"return confirm('Tem certeza que deseja deletar este jogo?');\">
-                        <input type='hidden' name='id' value='" . $linha['id'] . "'>
-                        <button type='submit'>
-                            <i class='fas fa-trash'></i>
-                        </button>
-                    </form>
-                  </td>";
+            echo "<th>ID</th><th>Nome</th><th>Plataforma</th><th>Gênero</th>";
+
+            if (isset($_SESSION['admin']) && $_SESSION['admin'] === true) {
+                echo "<th>Ações</th>";
+            }
+
             echo "</tr>";
+
+            while ($linha = mysqli_fetch_assoc($resultado)) {
+                echo "<tr>";
+                echo "<td>" . $linha['id'] . "</td>";
+                if (isset($_SESSION['admin']) && $_SESSION['admin'] === true) {
+                    echo "<td><a href='jogos.php?id=" . $linha['id'] . "' style='color: #ff1493; text-decoration: none; font-weight: bold;'>" . $linha['nome'] . "</a></td>";
+                } else {
+                    echo "<td><a href='avaliar_jogo.php?id=" . $linha['id'] . "' style='color: #c71585; text-decoration: none; font-weight: bold;'>" . $linha['nome'] . "</a></td>";
+                }
+                echo "<td>" . $linha['plataforma'] . "</td>";
+                echo "<td>" . $linha['genero'] . "</td>";
+
+                if (isset($_SESSION['admin']) && $_SESSION['admin'] === true) {
+                    echo "<td>
+                            <form action='deletar.php' method='POST' onsubmit=\"return confirm('Tem certeza que deseja deletar este jogo?');\">
+                                <input type='hidden' name='id' value='" . $linha['id'] . "'>
+                                <button type='submit'>
+                                    <i class='fas fa-trash'></i>
+                                </button>
+                            </form>
+                        </td>";
+                }
+
+                echo "</tr>";
+            }
+
+            echo "</table>";
+        } else {
+            echo "<p style='color: #c71585; font-size: 1.2rem;'>Nenhum jogo foi encontrado.</p>";
         }
 
-        echo "</table>";
-    } else {
-        echo "<p style='color: #c71585; font-size: 1.2rem;'>Nenhum jogo foi encontrado.</p>";
-    }
+        mysqli_close($conn);
 
-    mysqli_close($conn);
-  ?>
+        
+        if (isset($_SESSION['admin']) && $_SESSION['admin'] === true) {
+            echo "<a href='jogos.php'>➕ Criar novo jogo</a>";
+        }
+    ?>
 
   <!-- Pétalas fofinhas -->
   <script>

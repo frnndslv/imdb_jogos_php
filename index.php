@@ -111,7 +111,7 @@
 <body>
 
   <div>
-    <h1>FAÇA SEU LOGIN MERMÃO!</h1>
+    <h1>FAÇA SEU LOGIN</h1>
   </div>
 
   <div>
@@ -172,7 +172,9 @@
 
     if ($login_valido) {
         session_start();
+        $_SESSION['idUsuario'] = $usuario['id'];
         $_SESSION['login'] = $usuario['login'];
+        $_SESSION['admin'] = $usuario['admin'];
         header("Location: perfil.php");
         exit();
     } else {
